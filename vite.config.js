@@ -6,7 +6,7 @@ const config = {
 	plugins: [sveltekit(),
 		NodeGlobalsPolyfillPlugin()],
 	define: {
-		global: {}
+		global: 'globalThis'
 	}
 };
 
