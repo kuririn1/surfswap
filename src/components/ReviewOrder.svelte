@@ -1,5 +1,5 @@
 <script>
-    import { onMount } from 'svelte';
+    import { onDestroy, onMount } from 'svelte';
     import { desoApi } from '../Store.js';
     import { tokens } from '../utils/tokens.js';
     import { stripExtraChars } from '../utils/numbers.js';
@@ -33,20 +33,24 @@
         dispatch("back");
     };
 
-    setInterval(async () => {
-        updateData();
-    }, 8000);
-
-
-    async function updateData() {
+    async function updatePrices() {
         let { BuyingCoinQuantityFilled, SellingCoinQuantityFilled } = await getSimulatedMarketOrderResult();
        buyQty = BuyingCoinQuantityFilled;
        sellQty = SellingCoinQuantityFilled;
     }
 
+    let updatePricesTimer;
+
     onMount(async () => {
-       updateData();
+        updatePrices();
+        updatePricesTimer = setInterval(async () => {
+            updatePrices();
+        }, 8000);
 	});
+
+    onDestroy(async () => {
+        clearInterval(updatePricesTimer);
+    });
 
     async function getSimulatedMarketOrderResult() {
         const request = {
