@@ -167,7 +167,7 @@
         errorType = ErrorType.None;
     }    
 
-    $: isAmountEmpty = topTokenAmount === '' || parseFloat(stripExtraChars(topTokenAmount)) === 0;
+    $: isAmountEmpty = !topTokenAmount || parseFloat(stripExtraChars(topTokenAmount)) === 0;
 
 </script>
 
