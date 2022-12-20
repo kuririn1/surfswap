@@ -15,12 +15,6 @@ export const cleanDollarInput = (num) => {
     return cleanInput(num).replace(/(\..{2}).*/g, '$1');
 }
 
-export const addSpacesToNumberOld = (num) => {
-    //add spaces for thousands but not for decimals after dot
-    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
-
-}
-
 export const stripExtraChars = (num) => {
     return num?.toString()?.replace(/ /g, '')?.replace('~$', '');
 }
@@ -29,13 +23,6 @@ export const cleanInput = (num) => {
     //allow only numbers 
     return num?.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1').replace(/^0+(?!\.|$)/, '');
 }
-
-/*
-export const addSpacesToNumber3 = (num) => {
-	let result = parseFloat(num).toLocaleString('en-US', { style: 'currency', currency: 'USD' });
-  return result?.replace(/,/g, ' ').replace(/\$/g, '~$');
-}
-*/
 
 export const addSpacesToNumber = (num) => {
     var parts = num.toString().split(".");
