@@ -1,5 +1,5 @@
 <script>
-    import { createEventDispatcher } from "svelte";
+    import { createEventDispatcher, onMount } from "svelte";
     const dispatch = createEventDispatcher();
     import { getTokenImage } from '../utils/tokens.js';
     import selectArrow from '../img/select_arrow.svg';
@@ -28,6 +28,10 @@
     function removeFocus() {
         searchFocus = false;
     }
+
+    onMount(async () => {
+        setFocus();
+	});
 </script>
 
 <div class="text-center mt-3 mb-2.5">
@@ -35,7 +39,7 @@
     <span class="font-bold text-lg">Select a coin</span>
 </div>
 <div class="mx-5 mb-5 flex flex-row border rounded-lg border-white {searchFocus ? 'border-blue-400 border' : ''}">
-    <input type="text" on:focus={setFocus} on:blur={removeFocus} bind:value={searchInput} class="w-full rounded-l-lg h-10 bg-slate-50 p-2 focus:outline-none" placeholder="Search token by name...">
+    <input autofocus type="text" on:focus={setFocus} on:blur={removeFocus} bind:value={searchInput} class="w-full rounded-l-lg h-10 bg-slate-50 p-2 focus:outline-none" placeholder="Search token by name...">
     <div class="rounded-r-lg bg-slate-50 pr-2">
         <img src={xIcon} on:click={back} class="h-6 mt-2 rounded-md hover:cursor-pointer hover:bg-gray-100 hover:ring-2 hover:ring-gray-100 {searchInput.length > 0 ? 'block' : 'hidden'}">
     </div>
