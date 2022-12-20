@@ -24,6 +24,7 @@
     let isError = false;
     const ErrorType = {
         NotEnoughCoins: 'NotEnoughCoins',
+        MatchingOwnOrder: "MatchingOwnOrder",
         Uknown: 'Uknown',
         None: 'None'
     };
@@ -74,6 +75,8 @@
                     "BuyingCoinQuantityFilled": 0,
                     "SellingCoinQuantityFilled": 0
                 }
+            } else if(e.response.data.error.includes("Error getting orders to match: : RuleErrorDAOCoinLimitOrderMatchingOwnOrder")) {
+                errorType = ErrorType.MatchingOwnOrder;
             } else {
                 errorType = ErrorType.Uknown;
                 console.log(e.response.data.error);
@@ -124,6 +127,8 @@
         <div class="bg-red-200 p-3 text-sm rounded-md mt-3.5 text-red-700 leading-6">
             {#if errorType === ErrorType.NotEnoughCoins}
                 You don't have enough {sellToken} to complete this order.
+            {:else if errorType === ErrorType.MatchingOwnOrder}
+                This order is matching your own order.
             {:else}
                 Uknown error.
             {/if}
