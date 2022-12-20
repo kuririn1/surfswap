@@ -53,6 +53,7 @@ export const usdToTokenAmount = (usdValue, selectionName) =>{
     return value;
 }
 
+//type: ASK, BID
 export const desoToDAOCoin = (type, amount) => {
 
     let toFill = amount;
@@ -64,7 +65,7 @@ export const desoToDAOCoin = (type, amount) => {
         ordersSorted = get(orders).filter(order => order.OperationType === 'BID').sort((a, b) => parseFloat(b.Price) - parseFloat(a.Price));
     }
 
-    let num = 0; // or length askSorted! then not liquid
+    let num = 0;
     while(toFill > 0 && num < ordersSorted.length) {
         const liqudityPerAsk = parseFloat(ordersSorted[num].Quantity) * parseFloat(ordersSorted[num].Price);
         toFill -= liqudityPerAsk;
@@ -72,15 +73,13 @@ export const desoToDAOCoin = (type, amount) => {
     }
 
     if(toFill > 0) {
-        //console.log('not enough liquidity for this amount ', toFill);
         throw new LiqudityError(toFill);
-        return 0;
     }
     
     let result = [];
     let filled = 0;
     let coinTotal = 0;
-    //cal price per coin too, avg
+
     for(let i = 0; i < num; i++) {
         result.push(ordersSorted[i]);
         if(i === num - 1) {
@@ -95,6 +94,7 @@ export const desoToDAOCoin = (type, amount) => {
     return coinTotal;
 };
 
+//type: ASK, BID
 export const daoCoinToDeso = (type, amount) => {
 
     let toFill = amount;
@@ -106,9 +106,7 @@ export const daoCoinToDeso = (type, amount) => {
         ordersSorted = get(orders).filter(order => order.OperationType === 'ASK').sort((a, b) => parseFloat(a.Price) - parseFloat(b.Price));
     }
 
-    let num = 0; // or length askSorted! then not liquid
-    //not liquid if no orders
-    // and if not enough liquidity - 
+    let num = 0;
     while(toFill > 0 && num < ordersSorted.length) {
         const liqudityPerBid = parseFloat(ordersSorted[num].Quantity);
         toFill -= liqudityPerBid;
@@ -116,17 +114,13 @@ export const daoCoinToDeso = (type, amount) => {
     }
 
     if(toFill > 0) {
-        //console.log('no liquidity for this trade ', toFill);
-        throw new LiqudityError(toFill);
-        //throw custom error with toFill varible
-            
-        return 0;
+        throw new LiqudityError(toFill);       
     }
     
     let result = [];
     let filled = 0;
     let coinTotal = 0;
-    //cal price per coin too, avg
+
     for(let i = 0; i < num; i++) {
         result.push(ordersSorted[i]);
         if(i === num - 1) {

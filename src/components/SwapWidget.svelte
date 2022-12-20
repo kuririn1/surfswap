@@ -32,6 +32,15 @@
 
     let screen = swapScreen.Main;
 
+    let isError = false;
+    const ErrorType = {
+        NotEnoughLiqudity: 'NotEnoughLiqudity',
+        Uknown: 'Uknown',
+        None: 'None'
+    };
+
+    let errorType = ErrorType.None;
+
     onMount(async () => {
         updateOrders();
         $desoUsdPrice = await getDesoUsdPrice();
@@ -52,39 +61,82 @@
     function updateTokensTop() {
         let topTokenAmountStripped = stripExtraChars(topTokenAmount);
 
-        topUsdAmount = tokenToUsdAmount(topTokenAmountStripped, topTokenSelection);
-        updateDownAmounts(topTokenAmountStripped)
+        resetError();
+
+        try {
+            topUsdAmount = tokenToUsdAmount(topTokenAmountStripped, topTokenSelection);
+            updateDownAmounts(topTokenAmountStripped);
+        } catch(e) {
+            console.log('top->',e.message);
+            isError = true;
+            errorType = ErrorType.NotEnoughLiqudity;
+        }
     }
 
     function updateTokensDown() {
         let downTokenAmountStripped = stripExtraChars(downTokenAmount);
 
-        downUsdAmount = tokenToUsdAmount(downTokenAmountStripped, downTokenSelection);
-        updateTopAmounts(downTokenAmountStripped);
+        resetError();
+
+        try {
+            downUsdAmount = tokenToUsdAmount(downTokenAmountStripped, downTokenSelection);
+            updateTopAmounts(downTokenAmountStripped);
+        } catch(e) {
+            console.log('down->',e.message);
+            isError = true;
+            errorType = ErrorType.NotEnoughLiqudity;
+        }
     }
 
     function updateTokensTopUsd() {
-        topTokenAmount = usdToTokenAmount(stripExtraChars(topUsdAmount), topTokenSelection);
-        updateDownAmounts(topTokenAmount);
-        topTokenAmount = roundTo6or4Decimals(topTokenAmount);
+        resetError();
+
+        try {
+            topTokenAmount = usdToTokenAmount(stripExtraChars(topUsdAmount), topTokenSelection);
+            updateDownAmounts(topTokenAmount);
+            topTokenAmount = roundTo6or4Decimals(topTokenAmount);
+        } catch(e) {
+            console.log('topUsd->',e.message);
+            isError = true;
+            errorType = ErrorType.NotEnoughLiqudity;
+        }
     }
 
     function updateTokensDownUsd() {
-        downTokenAmount = usdToTokenAmount(stripExtraChars(downUsdAmount), downTokenSelection);
-        updateTopAmounts(downTokenAmount);
-        downTokenAmount = roundTo6or4Decimals(downTokenAmount);
+        resetError();
+        try {
+            downTokenAmount = usdToTokenAmount(stripExtraChars(downUsdAmount), downTokenSelection);
+            updateTopAmounts(downTokenAmount);
+            downTokenAmount = roundTo6or4Decimals(downTokenAmount);
+        } catch(e) {
+            console.log('downUsd->',e.message);
+            isError = true;
+            errorType = ErrorType.NotEnoughLiqudity;
+        }
     }
 
     function updateTopAmounts(_downTokenAmount) {
-            topTokenAmount = getPriceForTheSide('top', topTokenSelection, _downTokenAmount);
-            topUsdAmount = tokenToUsdAmount(topTokenAmount, topTokenSelection);
-            topTokenAmount = roundTo6or4Decimals(topTokenAmount);
+            try {
+                topTokenAmount = getPriceForTheSide('top', topTokenSelection, _downTokenAmount);
+                topUsdAmount = tokenToUsdAmount(topTokenAmount, topTokenSelection);
+                topTokenAmount = roundTo6or4Decimals(topTokenAmount);
+            } catch (e) {
+                console.log('et->',e.message);
+                isError = true;
+                errorType = ErrorType.NotEnoughLiqudity;
+            }
     }
 
     async function updateDownAmounts(_topTokenAmount) {
-            downTokenAmount = getPriceForTheSide('down', downTokenSelection, _topTokenAmount);
-            downUsdAmount = tokenToUsdAmount(downTokenAmount, downTokenSelection);
-            downTokenAmount = roundTo6or4Decimals(downTokenAmount);
+            try {
+                downTokenAmount = getPriceForTheSide('down', downTokenSelection, _topTokenAmount);
+                downUsdAmount = tokenToUsdAmount(downTokenAmount, downTokenSelection);
+                downTokenAmount = roundTo6or4Decimals(downTokenAmount);
+            } catch (e) {
+                console.log('ed->',e.message);
+                isError = true;
+                errorType = ErrorType.NotEnoughLiqudity;
+            }
     }
 
     function reversePair() { 
@@ -109,6 +161,11 @@
         await updateOrders();
         updateTokensTop();
     }
+
+    function resetError() {
+        isError = false;
+        errorType = ErrorType.None;
+    }    
 
     $: isAmountEmpty = topTokenAmount === '' || parseFloat(stripExtraChars(topTokenAmount)) === 0;
 
@@ -154,6 +211,16 @@
             <DollarInput bind:value={downUsdAmount} on:input={updateTokensDownUsd} />
         </div>
     </div>    
+
+    {#if isError}
+        <div class="bg-red-200 p-3 text-sm rounded-md mt-3.5 text-red-700 leading-6">
+            {#if errorType === ErrorType.NotEnoughLiqudity}
+                Not enough liqudity to make this swap.
+            {:else}
+                Uknown error.
+            {/if}
+        </div>    
+    {/if}
 
     {#if $isUserLogged}
         <button on:click={() => { screen = swapScreen.ReviewOrder; }} class="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-blue-500 hover:to-cyan-500 rounded-lg text-center w-full text-white mt-4 p-2 disabled:opacity-50" disabled='{isAmountEmpty}'>{isAmountEmpty ? 'Enter amount to swap' : 'Review order'}</button>
