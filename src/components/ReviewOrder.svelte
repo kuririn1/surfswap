@@ -135,7 +135,7 @@
         </div>    
     {/if}
 
-    <button on:click={sendMarketOrder} class="bg-gradient-to-r from-cyan-500 to-blue-500  hover:from-blue-500 hover:to-cyan-500  rounded-lg inline-flex items-center justify-center w-full text-white mt-4 p-2 disabled:opacity-50" disabled='{isError}'>
+    <button on:click={sendMarketOrder} class="bg-gradient-to-r from-indigo-500 to-indigo-400 hover:shadow-[0_0_22px_-7px_rgba(1,4,232,0.8)] rounded-lg inline-flex items-center justify-center w-full text-white mt-4 p-2 disabled:opacity-50" disabled='{isError}'>
        {#if loading}
         <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>

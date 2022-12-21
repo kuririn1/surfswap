@@ -223,9 +223,9 @@
     {/if}
 
     {#if $isUserLogged}
-        <button on:click={() => { screen = swapScreen.ReviewOrder; }} class="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-blue-500 hover:to-cyan-500 rounded-lg text-center w-full text-white mt-4 p-2 disabled:opacity-50" disabled='{isAmountEmpty}'>{isAmountEmpty ? 'Enter amount to swap' : 'Review order'}</button>
+        <button on:click={() => { screen = swapScreen.ReviewOrder; }} class="bg-gradient-to-r from-indigo-500 to-indigo-400 hover:shadow-[0_0_22px_-7px_rgba(1,4,232,0.8)] rounded-lg text-center w-full text-white mt-4 p-2 disabled:opacity-50" disabled='{isAmountEmpty}'>{isAmountEmpty ? 'Enter amount to swap' : 'Review order'}</button>
     {:else}
-        <button class="bg-gradient-to-r from-cyan-500 to-blue-500  hover:from-blue-500 hover:to-cyan-500 rounded-lg text-center w-full text-white mt-4 p-2">Login with Deso</button>
+        <button class="bg-gradient-to-r from-indigo-500 to-indigo-400 hover:shadow-[0_0_22px_-7px_rgba(1,4,232,0.8)] rounded-lg text-center w-full text-white mt-4 p-2">Login with Deso</button>
     {/if}
     </div>
 

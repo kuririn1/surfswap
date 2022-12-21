@@ -1,6 +1,6 @@
 <script>
     import logoutIcon from '../img/logout_icon.svg'
-    import logo from '../img/surfswap-logo.svg'
+    import logo from '../img/surf-swap.svg'
     import { desoApi, isUserLogged } from '../Store.js';
     import { onMount } from 'svelte';
 
@@ -70,7 +70,7 @@
                     </div>
                 </div>
             {:else}
-                <button on:click={login} class="bg-gradient-to-r from-cyan-500 to-blue-500 rounded-lg hover:from-blue-500 hover:to-cyan-500 text-white text-sm py-2 px-4">
+                <button on:click={login} class="bg-gradient-to-r from-indigo-500 to-indigo-400 hover:shadow-[0_0_22px_-7px_rgba(1,4,232,0.8)] rounded-lg text-white text-sm py-2 px-4">
                     Login with Deso
                 </button>
             {/if}
