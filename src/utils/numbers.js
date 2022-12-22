@@ -20,7 +20,10 @@ export const stripExtraChars = (num) => {
 }
 
 export const cleanInput = (num) => {
-    if(!isNaN(num)) return num?.toString() || '';
+    if(num === '.') return '0.';
+    if(!isNaN(num)) {
+        num = num?.toString() || '';
+    }    
     //allow only numbers 
     return num?.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1').replace(/^0+(?!\.|$)/, '');
 }

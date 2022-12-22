@@ -4,13 +4,12 @@
     import { tokens, oppositeTokens } from '../utils/tokens.js';
     import { getLimitOrders, getDesoUsdPrice, tokenToUsdAmount, usdToTokenAmount, getPriceForTheSide } from '../utils/daocoins.js';
     import { roundTo6or4Decimals, stripExtraChars, cleanInput } from '../utils/numbers.js';
-    import { onMount } from 'svelte';
+    import { onDestroy, onMount } from 'svelte';
     import { orders, desoUsdPrice, isUserLogged } from '../Store.js';
     import downArrow from '../img/down_arrow.svg';
     import TokenSelect from './TokenSelect.svelte';
     import TokenMenu from './TokenMenu.svelte';
     import ReviewOrder from './ReviewOrder.svelte';
-  import { LiqudityError } from '../utils/errors.js';
 
     let tokenList = Object.keys(tokens);
 
@@ -46,13 +45,20 @@
         $desoUsdPrice = await getDesoUsdPrice();
 	});
 
-    setInterval(async () => {
+    let ordersTimer, desoPriceTimer;
+
+   ordersTimer = setInterval(async () => {
         updateOrders();
     }, 8000);
 
-    setInterval(async () => {
+    desoPriceTimer = setInterval(async () => {
         $desoUsdPrice = await getDesoUsdPrice();
     }, 1000 * 30);
+
+    onDestroy(async () => {
+        clearInterval(ordersTimer);
+        clearInterval(desoPriceTimer);
+    });
 
     async function updateOrders() {
         $orders = await getLimitOrders(tokens[topTokenSelection], tokens[downTokenSelection]);

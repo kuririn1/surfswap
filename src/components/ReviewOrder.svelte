@@ -40,17 +40,22 @@
        sellQty = SellingCoinQuantityFilled;
     }
 
-    let updatePricesTimer;
+    let updatePricesTimer, refreshTimer, timerCount = 8;
 
     onMount(async () => {
         updatePrices();
         updatePricesTimer = setInterval(async () => {
-            updatePrices();
+            await updatePrices();
+            timerCount = 8;
         }, 8000);
+        refreshTimer = setInterval(async () => {
+            timerCount--;
+        }, 1000);
 	});
 
     onDestroy(async () => {
         clearInterval(updatePricesTimer);
+        clearInterval(refreshTimer);
     });
 
     async function getSimulatedMarketOrderResult() {
@@ -75,7 +80,7 @@
                     "BuyingCoinQuantityFilled": 0,
                     "SellingCoinQuantityFilled": 0
                 }
-            } else if(e.response.data.error.includes("Error getting orders to match: : RuleErrorDAOCoinLimitOrderMatchingOwnOrder")) {
+            } else if(e.response.data.error.includes("RuleErrorDAOCoinLimitOrderMatchingOwnOrder")) {
                 errorType = ErrorType.MatchingOwnOrder;
             } else {
                 errorType = ErrorType.Uknown;
@@ -119,10 +124,18 @@
     </div>
     <hr>
 
-    <div class="p-5">
+    <div class="text-center text-xs text-gray-400 pt-4 pb-2">
+        {#if timerCount}
+            Refreshing quote in {timerCount}s
+        {:else}
+            Refreshing...
+        {/if}
+    </div>
+
+    <div class="p-5 pt-0">
     <TokenPreview token={sellToken} qty={sellQty} label="You sell" />
     <div class="h-3.5"></div>
-    <TokenPreview token={buyToken} qty={buyQty} label="You buy" /> 
+    <TokenPreview token={buyToken} qty={buyQty} label="You buy" />   
     
     {#if isError}
         <div class="bg-red-200 p-3 text-sm rounded-md mt-3.5 text-red-700 leading-6">
