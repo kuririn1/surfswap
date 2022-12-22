@@ -87,9 +87,10 @@
     async function sendMarketOrder() {
         try {
             loading = true;
-            const response = await deso.identity.submitTransaction(transactionHex);
+            const response = await deso.identity.submitTransaction(transactionHex, { broadcast: true }, { App: "SurfSwap" });
             transactionId = response.TransactionIDBase58Check;
             orderComplete = true;
+            clearInterval(updatePricesTimer);
             loading = false;
         } catch (e) {
             loading = false;

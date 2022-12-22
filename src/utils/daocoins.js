@@ -21,10 +21,14 @@ export const getLimitOrders = async (DAOCoin1, DAOCoin2) => {
 export const tokenToUsdAmount = (amount, selectionName) => {
     let desoValue = amount;
     if(selectionName != "DESO") {
+        try {
         desoValue = daoCoinToDeso('BID', amount);
+        } catch(LiqudityError) {
+            desoValue = 0;
+        }
     }
     const calcPrice = get(desoUsdPrice) * desoValue / 100;
-    return calcPrice.toFixed(2);
+    return calcPrice;
 }
 
 export const usdToDesoAmount = (usdAmount) => {

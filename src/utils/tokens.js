@@ -2,7 +2,7 @@ import desoLogo from '../img/DESO.png';
 
 export let tokens = {
     'DESO' : 'DESO',
-    'DAODAO' : 'BC1YLj3zNA7hRAqBVkvsTeqw7oi4H6ogKiAFL1VXhZy6pYeZcZ6TDRY', 
+    'openfund' : 'BC1YLj3zNA7hRAqBVkvsTeqw7oi4H6ogKiAFL1VXhZy6pYeZcZ6TDRY', 
     'DeSoShopping' : 'BC1YLhF1JvLsBQoh5VYdkVvPzXX8y6SipfhMUhgkusvYnyr4iP33D1P', 
     'LIX' : 'BC1YLgcwvXPjeiYBVUDybtaw6GeYDmv6qurDts5DVoR1XG2v2WRvWdw',
     'OvercloutDESO' : 'BC1YLhZzLUK3bC59sguWuazQpaT4611cr12VXQig4rgiThRDT4Wiq8R',
@@ -12,7 +12,7 @@ export let tokens = {
 };
 
 export let tradingPairs = [
-    ['DESO', 'DAODAO'],
+    ['DESO', 'openfund'],
     ['DESO', 'DeSoShopping'],
     ['DESO', 'LIX'],
     ['DESO', 'OvercloutDESO'],

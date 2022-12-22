@@ -14,7 +14,7 @@
             {label}
          </div>
          <div class="flex-auto text-right">
-            ~${tokenToUsdAmount(qty, token)}
+            ~${tokenToUsdAmount(qty, token).toFixed(2)}
         </div>
     </div> 
 

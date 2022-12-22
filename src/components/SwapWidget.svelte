@@ -3,7 +3,7 @@
     import DollarInput from './DollarInput.svelte';
     import { tokens, oppositeTokens } from '../utils/tokens.js';
     import { getLimitOrders, getDesoUsdPrice, tokenToUsdAmount, usdToTokenAmount, getPriceForTheSide } from '../utils/daocoins.js';
-    import { roundTo6or4Decimals, stripExtraChars } from '../utils/numbers.js';
+    import { roundTo6or4Decimals, stripExtraChars, cleanInput } from '../utils/numbers.js';
     import { onMount } from 'svelte';
     import { orders, desoUsdPrice, isUserLogged } from '../Store.js';
     import downArrow from '../img/down_arrow.svg';
@@ -15,7 +15,7 @@
     let tokenList = Object.keys(tokens);
 
     let topTokenSelection = 'DESO';
-    let downTokenSelection = 'DAODAO';
+    let downTokenSelection = 'openfund';
 
     let topTokenAmount;
     let downTokenAmount;
@@ -67,7 +67,6 @@
             topUsdAmount = tokenToUsdAmount(topTokenAmountStripped, topTokenSelection);
             updateDownAmounts(topTokenAmountStripped);
         } catch(e) {
-            console.log('top->',e.message);
             isError = true;
             errorType = ErrorType.NotEnoughLiqudity;
         }
@@ -82,7 +81,6 @@
             downUsdAmount = tokenToUsdAmount(downTokenAmountStripped, downTokenSelection);
             updateTopAmounts(downTokenAmountStripped);
         } catch(e) {
-            console.log('down->',e.message);
             isError = true;
             errorType = ErrorType.NotEnoughLiqudity;
         }
@@ -96,7 +94,6 @@
             updateDownAmounts(topTokenAmount);
             topTokenAmount = roundTo6or4Decimals(topTokenAmount);
         } catch(e) {
-            console.log('topUsd->',e.message);
             isError = true;
             errorType = ErrorType.NotEnoughLiqudity;
         }
@@ -109,7 +106,6 @@
             updateTopAmounts(downTokenAmount);
             downTokenAmount = roundTo6or4Decimals(downTokenAmount);
         } catch(e) {
-            console.log('downUsd->',e.message);
             isError = true;
             errorType = ErrorType.NotEnoughLiqudity;
         }
@@ -121,7 +117,6 @@
                 topUsdAmount = tokenToUsdAmount(topTokenAmount, topTokenSelection);
                 topTokenAmount = roundTo6or4Decimals(topTokenAmount);
             } catch (e) {
-                console.log('et->',e.message);
                 isError = true;
                 errorType = ErrorType.NotEnoughLiqudity;
             }
@@ -133,7 +128,6 @@
                 downUsdAmount = tokenToUsdAmount(downTokenAmount, downTokenSelection);
                 downTokenAmount = roundTo6or4Decimals(downTokenAmount);
             } catch (e) {
-                console.log('ed->',e.message);
                 isError = true;
                 errorType = ErrorType.NotEnoughLiqudity;
             }
@@ -168,6 +162,10 @@
     }    
 
     $: isAmountEmpty = !topTokenAmount || parseFloat(stripExtraChars(topTokenAmount)) === 0;
+    $: spread = ((1 - parseFloat(cleanInput(downUsdAmount)) / parseFloat(cleanInput(topUsdAmount))) * -100).toFixed(2);
+    $: reverseSpread = downTokenSelection === 'DESO' ? ((1 - tokenToUsdAmount(getPriceForTheSide('down', topTokenSelection, downTokenAmount), topTokenSelection) / parseFloat(tokenToUsdAmount(topTokenAmount, topTokenSelection))) * -100).toFixed(2) : 0;
+    $: pricePerBuyToken = roundTo6or4Decimals((parseFloat(cleanInput(topTokenAmount))/parseFloat(cleanInput(downTokenAmount))));
+    $: pricePerBuyTokenUsd = roundTo6or4Decimals(tokenToUsdAmount(pricePerBuyToken, topTokenSelection));
 
 </script>
 
@@ -210,7 +208,7 @@
         <div class="text-right">
             <DollarInput bind:value={downUsdAmount} on:input={updateTokensDownUsd} />
         </div>
-    </div>    
+    </div>
 
     {#if isError}
         <div class="bg-red-200 p-3 text-sm rounded-md mt-3.5 text-red-700 leading-6">
@@ -244,6 +242,18 @@
 {/if}
 
 </div>
+
+{#if screen === swapScreen.Main}
+    <div class="max-w-md mx-auto mt-4 text-sm px-8">
+    <!-- {isNaN(spread) || spread == 0 ? '' :  -->
+    {#if !isNaN(spread) && spread != 0 && spread != Infinity}
+        <div><span class="text-gray-400">Spread</span> <span class="float-right">{spread}%</span></div>
+    {/if}
+    {#if !isNaN(pricePerBuyToken)}    
+        <div><span class="text-gray-400">{downTokenSelection} buy price</span> <span class="float-right">{pricePerBuyToken}{downTokenSelection === 'DESO' ? ` ${topTokenSelection}` : 'Ð'} <span class="text-gray-400">~${pricePerBuyTokenUsd}</span></span></div>
+    {/if}    
+    </div>
+{/if}
 
 
 
