@@ -21,6 +21,8 @@ export let tradingPairs = [
     ['DESO', 'GatewayDAO']
 ];
 
+export const desoPublicKey = "BC1YLbnP7rndL92x7DbLp6bkUpCgKmgoHgz7xEbwhgHTps3ZrXA6LtQ";
+
 export const oppositeTokens = (token) => {
     return tradingPairs.filter(pair => pair.includes(token)).map(pair => pair.filter(t => t !== token)[0]);
 }
@@ -31,4 +33,9 @@ export const getTokenImage = (name) => {
     } else {
         return 'https://node.deso.org/api/v0/get-single-profile-picture/' + tokens[name];
     }
+}
+
+export const findNameBasedOnPK = (pk) => {
+    const result = Object.keys(tokens).find(key => tokens[key] === pk);
+    return result ? result : (pk === desoPublicKey ? 'DESO' : undefined);
 }
