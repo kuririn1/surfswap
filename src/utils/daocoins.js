@@ -64,6 +64,10 @@ export const desoToDAOCoin = (type, amount) => {
 
     let toFill = amount;
 
+    if(!get(orders)) {
+       return 0;
+    }
+
     let ordersSorted = [];
     if(type === 'ASK') {
         ordersSorted = get(orders).filter(order => order.OperationType === 'ASK').sort((a, b) => parseFloat(a.Price) - parseFloat(b.Price));

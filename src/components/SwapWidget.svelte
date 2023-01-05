@@ -1,7 +1,7 @@
 <script>
     import TokenInput from './TokenInput.svelte';
     import DollarInput from './DollarInput.svelte';
-    import { tokens, oppositeTokens } from '../utils/tokens.js';
+    import { tokens, oppositeTokens, tradingPairs } from '../utils/tokens.js';
     import { getLimitOrders, getDesoUsdPrice, tokenToUsdAmount, usdToTokenAmount, getPriceForTheSide, getTokenBalances, getBalance } from '../utils/daocoins.js';
     import { roundTo6or4Decimals, stripExtraChars, cleanInput } from '../utils/numbers.js';
     import { onDestroy, onMount } from 'svelte';
@@ -34,7 +34,7 @@
     let isError = false;
     const ErrorType = {
         NotEnoughLiqudity: 'NotEnoughLiqudity',
-        Uknown: 'Uknown',
+        Unknown: 'Unknown',
         None: 'None'
     };
 
@@ -63,11 +63,31 @@
 
     async function updateOrders() {
         $orders = await getLimitOrders(tokens[topTokenSelection], tokens[downTokenSelection]);
+        if($orders === null) {
+            isError = true;
+            errorType = ErrorType.NotEnoughLiqudity;
+        }
     }
 
     async function updateTokenBalances() {
         if($isUserLogged) {
             $tokenBalances = await getTokenBalances($desoApi.identity.getUserKey());
+            for (let i = 0; i < $tokenBalances.length; i++) {
+                let token = $tokenBalances[i].token;
+                let tokenPK = $tokenBalances[i].tokenPK;
+                if (!tokens.hasOwnProperty(token)) {
+                    tokens[token] = tokenPK;
+                }
+            }
+
+            tokenList = Object.keys(tokens);
+            let tokenNames = tradingPairs.map(pair => pair[1]);
+
+            for (let key in tokens) {
+                if (key !== "DESO" && !tokenNames.includes(key)) {
+                    tradingPairs.push(["DESO", key]);
+                }
+            }
         }
     }
 
@@ -155,6 +175,8 @@
         downTokenAmount = null;
         topUsdAmount = '~$0.00';
         downUsdAmount ='~$0.00';
+
+        updateOrders();
     }
 
     async function updateDownTokenSelection() {
@@ -170,8 +192,10 @@
     }
 
     function resetError() {
-        isError = false;
-        errorType = ErrorType.None;
+        if($orders) {
+            isError = false;
+            errorType = ErrorType.None;
+        }
     }    
 
     $: isAmountEmpty = !topTokenAmount || parseFloat(stripExtraChars(topTokenAmount)) === 0;
@@ -182,6 +206,7 @@
     $: insufficientBalance = parseFloat(stripExtraChars(topTokenAmount)) > getBalance(topTokenSelection);
     $: topTokenBalance = getBalance(topTokenSelection, $tokenBalances);
     $: downTokenBalance = getBalance(downTokenSelection, $tokenBalances);
+    $: noLiqudity = errorType === ErrorType.NotEnoughLiqudity;
 
 </script>
 
@@ -253,17 +278,19 @@
             {#if errorType === ErrorType.NotEnoughLiqudity}
                 Not enough liqudity to make this swap.
             {:else}
-                Uknown error.
+                Unknown error.
             {/if}
         </div>    
     {/if}
 
     {#if $isUserLogged}
-        <button on:click={() => { screen = swapScreen.ReviewOrder; }} class="bg-gradient-to-r from-indigo-500 to-indigo-400 hover:shadow-[0_0_22px_-7px_rgba(1,4,232,0.8)] rounded-lg text-center w-full text-white mt-4 p-2 disabled:opacity-50" disabled='{isAmountEmpty || insufficientBalance}'>
+        <button on:click={() => { screen = swapScreen.ReviewOrder; }} class="bg-gradient-to-r from-indigo-500 to-indigo-400 hover:shadow-[0_0_22px_-7px_rgba(1,4,232,0.8)] rounded-lg text-center w-full text-white mt-4 p-2 disabled:opacity-50" disabled='{isAmountEmpty || insufficientBalance || noLiqudity}'>
             {#if isAmountEmpty}
                 Enter amount to swap
             {:else if insufficientBalance}
                 Insufficient balance of {topTokenSelection}
+            {:else if noLiqudity}
+                No liqudity to make a swap
             {:else}
                 Review order
             {/if}
@@ -276,11 +303,11 @@
 {/if}
 
 {#if screen === swapScreen.TokenListUp}
-    <TokenMenu tokenList={tokenList} on:select={(e)=> { topTokenSelection = e.detail; updateTopTokenSelection(); }} on:back={() => {screen = swapScreen.Main }} />
+    <TokenMenu tokenList={tokenList} on:select={(e)=> { topTokenSelection = e.detail; updateTopTokenSelection(); }} on:back={() => {screen = swapScreen.Main; updateOrders(); }} />
 {/if}
 
 {#if screen === swapScreen.TokenListDown}
-    <TokenMenu tokenList={tokenList} on:select={(e)=> { downTokenSelection = e.detail; updateDownTokenSelection(); }} on:back={() => {screen = swapScreen.Main }} />
+    <TokenMenu tokenList={tokenList} on:select={(e)=> { downTokenSelection = e.detail; updateDownTokenSelection(); }} on:back={() => {screen = swapScreen.Main; updateOrders(); }} />
 {/if}
 
 {#if screen === swapScreen.ReviewOrder}
@@ -289,7 +316,7 @@
 
 </div>
 
-{#if screen === swapScreen.Main}
+{#if screen === swapScreen.Main && !noLiqudity}
     <div class="max-w-md mx-auto mt-4 text-sm px-8">
     <!-- {isNaN(spread) || spread == 0 ? '' :  -->
     {#if !isNaN(spread) && spread != 0 && spread != Infinity}

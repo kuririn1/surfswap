@@ -29,7 +29,8 @@
         MatchingOwnOrder: "MatchingOwnOrder",
         NotEnoughDeso: "NotEnoughDeso",
         OverspendingDeso: "OverspendingDeso",
-        Uknown: 'Uknown',
+        BuyingRestricted: "BuyingRestricted",
+        Unknown: 'Unknown',
         None: 'None'
     };
     let errorType = ErrorType.None;
@@ -39,9 +40,15 @@
     };
 
     async function updatePrices() {
-        let { BuyingCoinQuantityFilled, SellingCoinQuantityFilled } = await getSimulatedMarketOrderResult();
-       buyQty = BuyingCoinQuantityFilled;
-       sellQty = SellingCoinQuantityFilled;
+        try {
+            let { BuyingCoinQuantityFilled, SellingCoinQuantityFilled } = await getSimulatedMarketOrderResult();
+            buyQty = BuyingCoinQuantityFilled;
+            sellQty = SellingCoinQuantityFilled;
+        } catch(e) {
+            isError = true;
+            errorType = ErrorType.Unknown;
+            console.log(e);
+        }
     }
 
     let updatePricesTimer, refreshTimer, timerCount = 8;
@@ -90,8 +97,10 @@
                 errorType = ErrorType.NotEnoughDeso;
             } else if(e.response.data.error.includes("RuleErrorDAOCoinLimitOrderOverspendingDESO")) {
                 errorType = ErrorType.OverspendingDeso;
+            } else if(e.response.data.error.includes("Buying this DAO coin is restricted to the creator of the DAO")) {
+                errorType = ErrorType.BuyingRestricted;
             } else {
-                errorType = ErrorType.Uknown;
+                errorType = ErrorType.Unknown;
                 console.log(e.response.data.error);
             }
         }
@@ -212,6 +221,8 @@
                 You don't have enough DeSo to cover the transaction fees.
             {:else if errorType === ErrorType.OverspendingDeso} 
                 Error: RuleErrorDAOCoinLimitOrderOverspendingDESO
+            {:else if errorType === ErrorType.OverspendingDeso} 
+                Buying of this coin is restricted by the creator.
             {:else}
                 Uknown error.
             {/if}
