@@ -27,6 +27,8 @@
     const ErrorType = {
         NotEnoughCoins: 'NotEnoughCoins',
         MatchingOwnOrder: "MatchingOwnOrder",
+        NotEnoughDeso: "NotEnoughDeso",
+        OverspendingDeso: "OverspendingDeso",
         Uknown: 'Uknown',
         None: 'None'
     };
@@ -84,6 +86,10 @@
                 }
             } else if(e.response.data.error.includes("RuleErrorDAOCoinLimitOrderMatchingOwnOrder")) {
                 errorType = ErrorType.MatchingOwnOrder;
+            } else if(e.response.data.error.includes("AddInputsAndChangeToTransaction: Sanity check failed:")) {
+                errorType = ErrorType.NotEnoughDeso;
+            } else if(e.response.data.error.includes("RuleErrorDAOCoinLimitOrderOverspendingDESO")) {
+                errorType = ErrorType.OverspendingDeso;
             } else {
                 errorType = ErrorType.Uknown;
                 console.log(e.response.data.error);
@@ -202,6 +208,10 @@
                 You don't have enough {sellToken} to complete this order.
             {:else if errorType === ErrorType.MatchingOwnOrder}
                 This order is matching your own order.
+            {:else if errorType === ErrorType.NotEnoughDeso}    
+                You don't have enough DeSo to cover the transaction fees.
+            {:else if errorType === ErrorType.OverspendingDeso} 
+                Error: RuleErrorDAOCoinLimitOrderOverspendingDESO
             {:else}
                 Uknown error.
             {/if}
