@@ -1,6 +1,8 @@
-import { orders, desoUsdPrice, desoApi } from '../Store.js';
+import { orders, desoUsdPrice, desoApi, tokenBalances } from '../Store.js';
 import { get } from 'svelte/store';
 import { LiqudityError } from './errors.js';
+import { getProfile } from './profile.js';
+import { desoPublicKey } from './tokens.js'
 
 const deso = get(desoApi);
 
@@ -138,3 +140,41 @@ export const daoCoinToDeso = (type, amount) => {
 
     return coinTotal;
 };
+
+export const getTokenBalances = async (userPK) => {
+    const request = {
+        "FetchAll":true,
+        "FetchHodlings":true,
+        "IsDAOCoin":true,
+        "PublicKeyBase58Check": userPK
+    };
+    //const response = await deso.social.getHodlersForPublicKey(request);
+    //const profile = await getProfile
+
+    const [response, profile] = await Promise.all([
+        deso.social.getHodlersForPublicKey(request),
+        getProfile(),
+      ]);
+
+    let tokenBalances = response?.Hodlers.map(hodler => { return {
+        "token": hodler.ProfileEntryResponse.Username,
+        "tokenPK": hodler.ProfileEntryResponse.PublicKeyBase58Check,
+        "balance": parseInt(hodler.BalanceNanosUint256, 16) / 1E18
+        };
+    });
+
+    const desoBalance = profile.Profile.DESOBalanceNanos / 1E9;
+
+    tokenBalances.push({
+        "token": "DESO",
+        "tokenPK": desoPublicKey,
+        "balance": desoBalance
+    });
+
+    return tokenBalances;
+}
+
+export const getBalance = (token, refresh=null) => {
+    const obj = get(tokenBalances).find(item => item.token === token);
+    return obj ? obj.balance : 0;
+}

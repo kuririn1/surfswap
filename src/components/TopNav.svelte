@@ -2,6 +2,7 @@
     import logoutIcon from '../img/logout_icon.svg'
     import logo from '../img/surf-swap.svg'
     import { desoApi, isUserLogged } from '../Store.js';
+    import { getProfile, getProfilePic } from '../utils/profile.js'
     import { onMount } from 'svelte';
 
     const deso = $desoApi;
@@ -27,24 +28,12 @@
         }
     }
 
-    async function getProfile() {
-        const request = {
-            "PublicKeyBase58Check": deso.identity.getUserKey(),
-        }
-        const response = await deso.user.getSingleProfile(request);
-        return response;
-    }
-
-    async function getProfilePic() {
-        const response = await deso.user.getSingleProfilePicture(deso.identity.getUserKey());
-        return response;
-    }
-
     onMount(async () => {
         if($isUserLogged) {
             isLoadingProfile = true;
             profilePic = await getProfilePic();
-            username = (await getProfile()).Profile.Username;
+            const profile = await getProfile();
+            username = profile.Profile.Username;
             isLoadingProfile = false;
         }
     });

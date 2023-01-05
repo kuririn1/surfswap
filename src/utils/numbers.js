@@ -21,7 +21,7 @@ export const stripExtraChars = (num) => {
 
 export const cleanInput = (num) => {
     if(num === '.') return '0.';
-    if(!isNaN(num)) {
+    if(typeof num !== 'string') {
         num = num?.toString() || '';
     }    
     //allow only numbers 

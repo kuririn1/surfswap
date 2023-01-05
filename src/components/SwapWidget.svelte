@@ -2,10 +2,10 @@
     import TokenInput from './TokenInput.svelte';
     import DollarInput from './DollarInput.svelte';
     import { tokens, oppositeTokens } from '../utils/tokens.js';
-    import { getLimitOrders, getDesoUsdPrice, tokenToUsdAmount, usdToTokenAmount, getPriceForTheSide } from '../utils/daocoins.js';
+    import { getLimitOrders, getDesoUsdPrice, tokenToUsdAmount, usdToTokenAmount, getPriceForTheSide, getTokenBalances, getBalance } from '../utils/daocoins.js';
     import { roundTo6or4Decimals, stripExtraChars, cleanInput } from '../utils/numbers.js';
     import { onDestroy, onMount } from 'svelte';
-    import { orders, desoUsdPrice, isUserLogged } from '../Store.js';
+    import { orders, desoUsdPrice, isUserLogged, desoApi, tokenBalances } from '../Store.js';
     import downArrow from '../img/down_arrow.svg';
     import TokenSelect from './TokenSelect.svelte';
     import TokenMenu from './TokenMenu.svelte';
@@ -42,6 +42,7 @@
 
     onMount(async () => {
         updateOrders();
+        await updateTokenBalances();
         $desoUsdPrice = await getDesoUsdPrice();
 	});
 
@@ -62,6 +63,12 @@
 
     async function updateOrders() {
         $orders = await getLimitOrders(tokens[topTokenSelection], tokens[downTokenSelection]);
+    }
+
+    async function updateTokenBalances() {
+        if($isUserLogged) {
+            $tokenBalances = await getTokenBalances($desoApi.identity.getUserKey());
+        }
     }
 
     function updateTokensTop() {
@@ -172,6 +179,9 @@
     $: reverseSpread = downTokenSelection === 'DESO' ? ((1 - tokenToUsdAmount(getPriceForTheSide('down', topTokenSelection, downTokenAmount), topTokenSelection) / parseFloat(tokenToUsdAmount(topTokenAmount, topTokenSelection))) * -100).toFixed(2) : 0;
     $: pricePerBuyToken = roundTo6or4Decimals((parseFloat(cleanInput(topTokenAmount))/parseFloat(cleanInput(downTokenAmount))));
     $: pricePerBuyTokenUsd = roundTo6or4Decimals(tokenToUsdAmount(pricePerBuyToken, topTokenSelection));
+    $: insufficientBalance = parseFloat(stripExtraChars(topTokenAmount)) > getBalance(topTokenSelection);
+    $: topTokenBalance = getBalance(topTokenSelection, $tokenBalances);
+    $: downTokenBalance = getBalance(downTokenSelection, $tokenBalances);
 
 </script>
 
@@ -181,7 +191,20 @@
 {#if screen === swapScreen.Main}
     <div class="p-5">
     <div class="border border-grey-500 p-2 rounded-lg">
-            <p class="text-gray-400 text-sm mb-3">You sell</p>
+            <div class="flex">
+                <div class="flex-none">    
+                    <p class="text-gray-400 text-sm mb-3">You sell</p>
+                </div>
+                <div class="flex-auto text-right">
+                    {#if $isUserLogged}
+                        <p class="text-gray-400 text-sm mb-3">Balance: {roundTo6or4Decimals(topTokenBalance)} 
+                            {#if topTokenBalance > 0}
+                                <span class="text-indigo-400 hover:text-indigo-500 hover:cursor-pointer" on:click="{() => { topTokenAmount = topTokenBalance; updateTokensTop(); }}">Max</span>   
+                            {/if}
+                        </p>
+                    {/if}
+                </div>
+            </div>
             <div class="flex h-9">
                 <div class="flex-none text-left">
                    <TokenSelect name={topTokenSelection} on:click={() => { screen = swapScreen.TokenListUp }} />
@@ -201,7 +224,16 @@
     </div>
 
     <div class="border border-grey-500 p-2 rounded-lg">
-        <p class="text-gray-400 text-sm mb-3">You buy</p>
+        <div class="flex">
+            <div class="flex-none">    
+                <p class="text-gray-400 text-sm mb-3">You buy</p>
+            </div>
+            <div class="flex-auto text-right">
+                {#if $isUserLogged}
+                    <p class="text-gray-400 text-sm mb-3">Balance: {roundTo6or4Decimals(downTokenBalance)}</p>
+                {/if}
+            </div>
+        </div>
         <div class="flex h-9">
             <div class="flex-none text-left">
                 <TokenSelect name={downTokenSelection} on:click={() => { screen = swapScreen.TokenListDown }} />    
@@ -227,7 +259,15 @@
     {/if}
 
     {#if $isUserLogged}
-        <button on:click={() => { screen = swapScreen.ReviewOrder; }} class="bg-gradient-to-r from-indigo-500 to-indigo-400 hover:shadow-[0_0_22px_-7px_rgba(1,4,232,0.8)] rounded-lg text-center w-full text-white mt-4 p-2 disabled:opacity-50" disabled='{isAmountEmpty}'>{isAmountEmpty ? 'Enter amount to swap' : 'Review order'}</button>
+        <button on:click={() => { screen = swapScreen.ReviewOrder; }} class="bg-gradient-to-r from-indigo-500 to-indigo-400 hover:shadow-[0_0_22px_-7px_rgba(1,4,232,0.8)] rounded-lg text-center w-full text-white mt-4 p-2 disabled:opacity-50" disabled='{isAmountEmpty || insufficientBalance}'>
+            {#if isAmountEmpty}
+                Enter amount to swap
+            {:else if insufficientBalance}
+                Insufficient balance of {topTokenSelection}
+            {:else}
+                Review order
+            {/if}
+        </button>
     {:else}
         <button class="bg-gradient-to-r from-indigo-500 to-indigo-400 hover:shadow-[0_0_22px_-7px_rgba(1,4,232,0.8)] rounded-lg text-center w-full text-white mt-4 p-2">Login with Deso</button>
     {/if}

@@ -4,7 +4,8 @@
     import { getTokenImage } from '../utils/tokens.js';
     import selectArrow from '../img/select_arrow.svg';
     import xIcon from '../img/x_icon.svg';
-
+    import { getBalance } from '../utils/daocoins.js';
+    import { roundTo6or4Decimals } from '../utils/numbers.js';
 
     export let tokenList = [];
     export let value = '';
@@ -55,6 +56,9 @@
             <div class="ml-3.5 leading-9">
                 {name}
             </div>
+            <div class="flex-auto text-right mr-3.5 leading-9">
+                {roundTo6or4Decimals(getBalance(name))}
+            </div>    
         </div>    
     {/if}
     {/each}
