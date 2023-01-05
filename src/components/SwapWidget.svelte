@@ -72,7 +72,7 @@
     }
 
     function updateTokensTop() {
-        let topTokenAmountStripped = stripExtraChars(topTokenAmount);
+        let topTokenAmountStripped = stripExtraChars(cleanInput(topTokenAmount));
 
         resetError();
 
@@ -86,7 +86,7 @@
     }
 
     function updateTokensDown() {
-        let downTokenAmountStripped = stripExtraChars(downTokenAmount);
+        let downTokenAmountStripped = stripExtraChars(cleanInput(downTokenAmount));
 
         resetError();
 
