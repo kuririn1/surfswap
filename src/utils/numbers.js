@@ -12,6 +12,9 @@ export const roundToDecimal = (num, decimal) => {
 
 export const cleanDollarInput = (num) => {
     //allow only 2 decimal places for USD
+    if(Number(num) < 0.01) {
+        num = 0.00;
+    }
     return cleanInput(num).replace(/(\..{2}).*/g, '$1');
 }
 
