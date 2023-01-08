@@ -3,9 +3,10 @@ import { get } from 'svelte/store';
 
 const deso = get(desoApi);
 
-export const getProfile = async () => {
+export const getProfile = async (username = null, publicKey = deso.identity.getUserKey()) => {
     const request = {
-        "PublicKeyBase58Check": deso.identity.getUserKey(),
+        "PublicKeyBase58Check": publicKey,
+        "Username": username
     }
     const response = await deso.user.getSingleProfile(request);
     return response;

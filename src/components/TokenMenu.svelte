@@ -6,13 +6,20 @@
     import xIcon from '../img/x_icon.svg';
     import { getBalance } from '../utils/daocoins.js';
     import { roundTo6or4Decimals } from '../utils/numbers.js';
+    import { getProfile } from '../utils/profile.js';
 
     export let tokenList = [];
     export let value = '';
     let searchInput = '';
 
+    let addedTokens = {};
+
     const select = (name) => {
-        dispatch("select", name);
+        if(addedTokens.hasOwnProperty(name)) {
+            dispatch("select", {name, tokenPK: addedTokens[name]});
+        } else {
+            dispatch("select", {name});
+        }
         back();
     };
 
@@ -30,6 +37,22 @@
         searchFocus = false;
     }
 
+    async function onInput() {
+        try {
+            const profile = await getProfile(searchInput, null);
+
+            if(profile?.Profile.DAOCoinEntry.NumberOfHolders > 0) {
+                const tokenName = profile.Profile.Username;
+                const tokenPK = profile.Profile.PublicKeyBase58Check;
+                if(!tokenList.includes(tokenName)) {
+                    tokenList.push(tokenName);
+                    tokenList = tokenList;
+                    addedTokens[tokenName] = tokenPK;
+                }
+            }
+        } catch {}
+    }
+
     onMount(async () => {
         setFocus();
 	});
@@ -40,7 +63,7 @@
     <span class="font-bold text-lg">Select a coin</span>
 </div>
 <div class="mx-5 mb-5 flex flex-row border rounded-lg border-white {searchFocus ? 'border-blue-400 border' : ''}">
-    <input autofocus type="text" on:focus={setFocus} on:blur={removeFocus} bind:value={searchInput} class="w-full rounded-l-lg h-10 bg-slate-50 p-2 focus:outline-none" placeholder="Search token by name...">
+    <input autofocus type="text" on:focus={setFocus} on:blur={removeFocus} bind:value={searchInput} on:input={onInput} class="w-full rounded-l-lg h-10 bg-slate-50 p-2 focus:outline-none" placeholder="Search token by name...">
     <div class="rounded-r-lg bg-slate-50 pr-2">
         <img src={xIcon} on:click={back} class="h-6 mt-2 rounded-md hover:cursor-pointer hover:bg-gray-100 hover:ring-2 hover:ring-gray-100 {searchInput.length > 0 ? 'block' : 'hidden'}">
     </div>
@@ -51,7 +74,7 @@
     {#if name.toLowerCase().includes(searchInput.toLowerCase())}
         <div class="flex flex-row hover:bg-slate-200 hover:cursor-pointer py-1" on:click="{()=>select(name)}">
             <div>
-                <img class="rounded-full w-9 h-9 ml-3.5" src="{getTokenImage(name)}">
+                <img class="rounded-full w-9 h-9 ml-3.5" src="{getTokenImage(name, addedTokens.hasOwnProperty(name) ? addedTokens[name] : '')}">
             </div>    
             <div class="ml-3.5 leading-9">
                 {name}

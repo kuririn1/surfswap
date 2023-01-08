@@ -97,6 +97,14 @@
         }
     }
 
+    function addToken(name, tokenPK) {
+        if (!tokens.hasOwnProperty(name)) {
+            tokens[name] = tokenPK;
+            tokenList = Object.keys(tokens);
+            tradingPairs.push(["DESO", name]);
+        }  
+    }
+
     function updateTokensTop() {
         let topTokenAmountStripped = stripExtraChars(cleanInput(topTokenAmount));
 
@@ -312,11 +320,11 @@
 {/if}
 
 {#if screen === swapScreen.TokenListUp}
-    <TokenMenu tokenList={tokenList} on:select={(e)=> { topTokenSelection = e.detail; updateTopTokenSelection(); }} on:back={() => {screen = swapScreen.Main; updateOrders(); }} />
+    <TokenMenu tokenList={tokenList} on:select={(e)=> { topTokenSelection = e.detail?.name; if(e.detail?.tokenPK) { addToken(topTokenSelection, e.detail?.tokenPK); } updateTopTokenSelection(); }} on:back={() => {screen = swapScreen.Main; updateOrders(); }} />
 {/if}
 
 {#if screen === swapScreen.TokenListDown}
-    <TokenMenu tokenList={tokenList} on:select={(e)=> { downTokenSelection = e.detail; updateDownTokenSelection(); }} on:back={() => {screen = swapScreen.Main; updateOrders(); }} />
+    <TokenMenu tokenList={tokenList} on:select={(e)=> { downTokenSelection = e.detail?.name; if(e.detail?.tokenPK) { addToken(topTokenSelection, e.detail?.tokenPK); } updateDownTokenSelection(); }} on:back={() => {screen = swapScreen.Main; updateOrders(); }} />
 {/if}
 
 {#if screen === swapScreen.ReviewOrder}

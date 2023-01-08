@@ -27,11 +27,11 @@ export const oppositeTokens = (token) => {
     return tradingPairs.filter(pair => pair.includes(token)).map(pair => pair.filter(t => t !== token)[0]);
 }
 
-export const getTokenImage = (name) => {
+export const getTokenImage = (name, publicKey = '') => {
     if(name === 'DESO') {
         return desoLogo;
     } else {
-        return 'https://node.deso.org/api/v0/get-single-profile-picture/' + tokens[name];
+        return 'https://node.deso.org/api/v0/get-single-profile-picture/' + (tokens[name] ?? publicKey);
     }
 }
 
