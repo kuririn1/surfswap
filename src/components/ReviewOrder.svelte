@@ -14,6 +14,7 @@
     export let buyToken;
     export let sellToken;
     export let qty;
+    export let qtyBuy;
 
     let buyQty = 0;
     let sellQty = 0;
@@ -87,10 +88,6 @@
             isError = true;
             if(e.response.data.error.includes("is not enough to cover the amount they are selling")) {
                 errorType = ErrorType.NotEnoughCoins;
-                return {
-                    "BuyingCoinQuantityFilled": 0,
-                    "SellingCoinQuantityFilled": 0
-                }
             } else if(e.response.data.error.includes("RuleErrorDAOCoinLimitOrderMatchingOwnOrder")) {
                 errorType = ErrorType.MatchingOwnOrder;
             } else if(e.response.data.error.includes("AddInputsAndChangeToTransaction: Sanity check failed:")) {
@@ -102,6 +99,10 @@
             } else {
                 errorType = ErrorType.Unknown;
                 console.log(e.response.data.error);
+            }
+            return {
+                    "BuyingCoinQuantityFilled": qtyBuy,
+                    "SellingCoinQuantityFilled": qty
             }
         }
     }
@@ -160,6 +161,7 @@
     }
 
     $: qty = stripExtraChars(qty);
+    $: qtyBuy = stripExtraChars(qtyBuy);
 </script>
 
 {#if orderComplete} 

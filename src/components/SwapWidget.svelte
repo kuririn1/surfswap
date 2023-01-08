@@ -46,7 +46,7 @@
         $desoUsdPrice = await getDesoUsdPrice();
 	});
 
-    let ordersTimer, desoPriceTimer;
+    let ordersTimer, desoPriceTimer, balancesTimer;
 
    ordersTimer = setInterval(async () => {
         updateOrders();
@@ -54,11 +54,16 @@
 
     desoPriceTimer = setInterval(async () => {
         $desoUsdPrice = await getDesoUsdPrice();
+    }, 1000 * 45);
+
+    balancesTimer = setInterval(async () => {
+        updateTokenBalances();
     }, 1000 * 30);
 
     onDestroy(async () => {
         clearInterval(ordersTimer);
         clearInterval(desoPriceTimer);
+        clearInterval(balancesTimer);
     });
 
     async function updateOrders() {
@@ -66,6 +71,7 @@
         if($orders === null) {
             isError = true;
             errorType = ErrorType.NotEnoughLiqudity;
+            downTokenAmount = 0;
         }
     }
 
@@ -116,6 +122,7 @@
         } catch(e) {
             isError = true;
             errorType = ErrorType.NotEnoughLiqudity;
+            downTokenAmount = 0;
         }
     }
 
@@ -141,6 +148,7 @@
         } catch(e) {
             isError = true;
             errorType = ErrorType.NotEnoughLiqudity;
+            downTokenAmount = 0;
         }
     }
 
@@ -163,6 +171,7 @@
             } catch (e) {
                 isError = true;
                 errorType = ErrorType.NotEnoughLiqudity;
+                downTokenAmount = 0;
             }
     }
 
@@ -232,7 +241,7 @@
             </div>
             <div class="flex h-9">
                 <div class="flex-none text-left">
-                   <TokenSelect name={topTokenSelection} on:click={() => { screen = swapScreen.TokenListUp }} />
+                   <TokenSelect name={topTokenSelection} on:click={() => { screen = swapScreen.TokenListUp; updateTokenBalances(); }} />
                  </div>
                  <div class="flex-auto text-right">
                     <TokenInput bind:value={topTokenAmount} on:input={updateTokensTop} />
@@ -261,7 +270,7 @@
         </div>
         <div class="flex h-9">
             <div class="flex-none text-left">
-                <TokenSelect name={downTokenSelection} on:click={() => { screen = swapScreen.TokenListDown }} />    
+                <TokenSelect name={downTokenSelection} on:click={() => { screen = swapScreen.TokenListDown; updateTokenBalances(); }} />    
             </div>
             <div class="flex-auto text-right">
                 <TokenInput bind:value={downTokenAmount} on:input={updateTokensDown} />
@@ -311,7 +320,7 @@
 {/if}
 
 {#if screen === swapScreen.ReviewOrder}
-    <ReviewOrder buyToken={downTokenSelection} sellToken={topTokenSelection} qty={topTokenAmount} on:back={() => {screen = swapScreen.Main }} />
+    <ReviewOrder buyToken={downTokenSelection} sellToken={topTokenSelection} qty={topTokenAmount} qtyBuy={downTokenAmount} on:back={() => {screen = swapScreen.Main; updateTokenBalances(); updateOrders(); }} />
 {/if}
 
 </div>
