@@ -13,10 +13,12 @@
     async function login() {
         const response = await deso.identity.login('4');
         if(response?.key?.length > 0) {
-            $isUserLogged = true;
             isLoadingProfile = true;
-            profilePic = await getProfilePic();
-            username = (await getProfile()).Profile.Username;
+            try {
+                profilePic = await getProfilePic();
+                username = (await getProfile()).Profile.Username;
+                $isUserLogged = true;
+            } catch {}
             isLoadingProfile = false;
         }
     }

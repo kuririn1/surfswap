@@ -60,10 +60,15 @@
         updateTokenBalances();
     }, 1000 * 30);
 
+    const unsubscribe = isUserLogged.subscribe(value => {
+        updateTokenBalances();
+	});
+
     onDestroy(async () => {
         clearInterval(ordersTimer);
         clearInterval(desoPriceTimer);
         clearInterval(balancesTimer);
+        unsubscribe();
     });
 
     async function updateOrders() {
@@ -94,6 +99,8 @@
                     tradingPairs.push(["DESO", key]);
                 }
             }
+        } else {
+            $tokenBalances = [];
         }
     }
 
