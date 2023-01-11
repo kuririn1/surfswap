@@ -152,7 +152,7 @@ export const getTokenBalances = async (userPK) => {
         "IsDAOCoin":true,
         "PublicKeyBase58Check": userPK
     };
-    
+
     const [response, profile] = await Promise.all([
         deso.social.getHodlersForPublicKey(request),
         getProfile(),

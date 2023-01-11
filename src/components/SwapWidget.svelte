@@ -218,6 +218,16 @@
         updateTokensTop();
     }
 
+    function calculateReverseSpread(a, b) {
+        try {
+            const reserveSpread =  ((1 - (pricePerSellToken / (getPriceForTheSide('top', downTokenSelection, stripExtraChars(topTokenAmount)) / stripExtraChars(topTokenAmount)))) * -100).toFixed(2);
+            return reserveSpread;
+        } catch(e) {
+            console.log(e);
+            return 0;
+        }    
+    }
+
     function resetError() {
         if($orders) {
             isError = false;
@@ -227,10 +237,11 @@
 
     $: isAmountEmpty = !topTokenAmount || parseFloat(stripExtraChars(topTokenAmount)) === 0;
     $: spread = ((1 - parseFloat(cleanInput(downUsdAmount)) / parseFloat(cleanInput(topUsdAmount))) * -100).toFixed(2);
-    //$: reverseSpread = downTokenSelection === 'DESO' ? ((1 - tokenToUsdAmount(getPriceForTheSide('down', topTokenSelection, downTokenAmount), topTokenSelection) / parseFloat(tokenToUsdAmount(topTokenAmount, topTokenSelection))) * -100).toFixed(2) : 0;
-    //extract to outside function with try catch
+    //$: reverseSpread = downTokenSelection === 'DESO' ? calculateReverseSpread(topTokenAmount, downTokenAmount) : 0;
     $: pricePerBuyToken = roundTo6or4Decimals((parseFloat(cleanInput(topTokenAmount))/parseFloat(cleanInput(downTokenAmount))));
+    $: pricePerSellToken = roundTo6or4Decimals((parseFloat(cleanInput(downTokenAmount))/parseFloat(cleanInput(topTokenAmount))));
     $: pricePerBuyTokenUsd = noLiqudity ? 0 : roundTo6or4Decimals(tokenToUsdAmount(pricePerBuyToken, topTokenSelection));
+    $: pricePerSellTokenUsd = noLiqudity ? 0 : roundTo6or4Decimals(tokenToUsdAmount(pricePerSellToken, downTokenSelection));
     $: insufficientBalance = parseFloat(stripExtraChars(topTokenAmount)) > getBalance(topTokenSelection);
     $: topTokenBalance = getBalance(topTokenSelection, $tokenBalances);
     $: downTokenBalance = getBalance(downTokenSelection, $tokenBalances);
@@ -350,10 +361,16 @@
     <!-- {isNaN(spread) || spread == 0 ? '' :  -->
     {#if !isNaN(spread) && spread != 0 && spread != Infinity}
         <div><span class="text-gray-400">Spread</span> <span class="float-right">{spread}%</span></div>
+   <!-- {:else if !isNaN(reverseSpread) && reverseSpread != 0 && reverseSpread != Infinity}
+        <div><span class="text-gray-400">Spread</span> <span class="float-right">{reverseSpread}%</span></div>
+   -->   
     {/if}
     {#if !isNaN(pricePerBuyToken)}    
         <div><span class="text-gray-400">{downTokenSelection} buy price</span> <span class="float-right">{pricePerBuyToken}{downTokenSelection === 'DESO' ? ` ${topTokenSelection}` : 'Ð'} <span class="text-gray-400">~${pricePerBuyTokenUsd}</span></span></div>
-    {/if}    
+    {/if}   
+    {#if !isNaN(pricePerSellToken)}    
+        <div><span class="text-gray-400">{topTokenSelection} sell price</span> <span class="float-right">{pricePerSellToken}{topTokenSelection === 'DESO' ? ` ${downTokenSelection}` : 'Ð'} <span class="text-gray-400">~${pricePerSellTokenUsd}</span></span></div>
+    {/if}   
     </div>
 {/if}
 
