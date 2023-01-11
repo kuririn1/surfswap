@@ -120,7 +120,7 @@
         } catch (e) {
             loading = false;
             isError = true;
-            errorType = ErrorType.Uknown;
+            errorType = ErrorType.Unknown;
             console.log(e.response.data.error);
         }
     }

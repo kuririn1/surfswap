@@ -195,12 +195,15 @@
         topTokenSelection = downTokenSelection;
         downTokenSelection = temp;  
 
+        resetAmounts();
+        updateOrders();
+    }
+
+    function resetAmounts() {
         topTokenAmount = null;
         downTokenAmount = null;
         topUsdAmount = '~$0.00';
         downUsdAmount ='~$0.00';
-
-        updateOrders();
     }
 
     async function updateDownTokenSelection() {
@@ -224,9 +227,10 @@
 
     $: isAmountEmpty = !topTokenAmount || parseFloat(stripExtraChars(topTokenAmount)) === 0;
     $: spread = ((1 - parseFloat(cleanInput(downUsdAmount)) / parseFloat(cleanInput(topUsdAmount))) * -100).toFixed(2);
-    $: reverseSpread = downTokenSelection === 'DESO' ? ((1 - tokenToUsdAmount(getPriceForTheSide('down', topTokenSelection, downTokenAmount), topTokenSelection) / parseFloat(tokenToUsdAmount(topTokenAmount, topTokenSelection))) * -100).toFixed(2) : 0;
+    //$: reverseSpread = downTokenSelection === 'DESO' ? ((1 - tokenToUsdAmount(getPriceForTheSide('down', topTokenSelection, downTokenAmount), topTokenSelection) / parseFloat(tokenToUsdAmount(topTokenAmount, topTokenSelection))) * -100).toFixed(2) : 0;
+    //extract to outside function with try catch
     $: pricePerBuyToken = roundTo6or4Decimals((parseFloat(cleanInput(topTokenAmount))/parseFloat(cleanInput(downTokenAmount))));
-    $: pricePerBuyTokenUsd = roundTo6or4Decimals(tokenToUsdAmount(pricePerBuyToken, topTokenSelection));
+    $: pricePerBuyTokenUsd = noLiqudity ? 0 : roundTo6or4Decimals(tokenToUsdAmount(pricePerBuyToken, topTokenSelection));
     $: insufficientBalance = parseFloat(stripExtraChars(topTokenAmount)) > getBalance(topTokenSelection);
     $: topTokenBalance = getBalance(topTokenSelection, $tokenBalances);
     $: downTokenBalance = getBalance(downTokenSelection, $tokenBalances);
@@ -248,7 +252,8 @@
                     {#if $isUserLogged}
                         <p class="text-gray-400 text-sm mb-3">Balance: {roundTo6or4Decimals(topTokenBalance)} 
                             {#if topTokenBalance > 0}
-                                <span class="text-indigo-400 hover:text-indigo-500 hover:cursor-pointer" on:click="{() => { topTokenAmount = topTokenBalance; updateTokensTop(); }}">Max</span>   
+                                <span class="text-indigo-400 hover:text-indigo-500 hover:cursor-pointer" on:click="{() => { topTokenAmount = topTokenBalance.toLocaleString('en-US', { useGrouping: false, maximumFractionDigits: 18 })
+                                    ; updateTokensTop(); }}">Max</span>   
                             {/if}
                         </p>
                     {/if}
@@ -320,7 +325,7 @@
             {/if}
         </button>
     {:else}
-        <button class="bg-gradient-to-r from-indigo-500 to-indigo-400 hover:shadow-[0_0_22px_-7px_rgba(1,4,232,0.8)] rounded-lg text-center w-full text-white mt-4 p-2">Login with Deso</button>
+        <button class="bg-gradient-to-r from-indigo-500 to-indigo-400 hover:shadow-[0_0_22px_-7px_rgba(1,4,232,0.8)] rounded-lg text-center w-full text-white mt-4 p-2 disabled:opacity-50" disabled="true">Login with Deso</button>
     {/if}
     </div>
 
