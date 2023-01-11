@@ -46,7 +46,7 @@
 
     <div class="flex flex-row">
         <div class="flex-auto">
-            <img src={logo} class="h-9" alt="SurfSwap">
+            <a href="/"><img src={logo} class="h-9" alt="SurfSwap"></a>
         </div>
         <div class="flex-none">
             {#if $isUserLogged && !isLoadingProfile}
