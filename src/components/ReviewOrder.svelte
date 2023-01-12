@@ -117,11 +117,20 @@
             clearInterval(refreshTimer);
             loading = false;
             orderDetails = await getCompletedTransactionInfo(transactionId);
+            addTxToDB(transactionId);
         } catch (e) {
             loading = false;
             isError = true;
             errorType = ErrorType.Unknown;
             console.log(e.response.data.error);
+        }
+    }
+
+    function addTxToDB(txId) {
+        try {
+            fetch('https://surfswap.tools.workers.dev/tx/add/' + txId);
+        } catch(e) {
+            console.log(e);
         }
     }
 
