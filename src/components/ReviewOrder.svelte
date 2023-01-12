@@ -175,7 +175,6 @@
 
 {#if orderComplete} 
     <div class="text-center">
-        <!-- <img src={selectArrow} alt="back arrow" class="float-left h-2 absolute ml-5 mt-3 rotate-90 rounded-sm hover:cursor-pointer hover:bg-gray-100 hover:ring-8 hover:ring-gray-100" on:click={back}> -->
         <img src="{completeImg}" alt="Order complete" class="my-8 w-16 mx-auto">
         <span class="font-bold text-xl">Order complete</span>
     </div>
