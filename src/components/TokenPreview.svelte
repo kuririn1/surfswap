@@ -1,6 +1,6 @@
 <script>
     import { getTokenImage } from '../utils/tokens.js';
-    import { roundTo6or4Decimals } from '../utils/numbers.js';
+    import { roundTo6or4Decimals, addSpacesToNumber } from '../utils/numbers.js';
     import { tokenToUsdAmount } from '../utils/daocoins.js';
 
     export let label;
@@ -14,7 +14,7 @@
             {label}
          </div>
          <div class="flex-auto text-right">
-            ~${tokenToUsdAmount(qty, token)}
+            ~${tokenToUsdAmount(qty, token).toFixed(2)}
         </div>
     </div> 
 
@@ -30,7 +30,7 @@
             </div>    
          </div>
          <div class="flex-auto text-right text-black text-2xl mt-[5px]">
-            {roundTo6or4Decimals(qty)}
+            {addSpacesToNumber(roundTo6or4Decimals(qty))}
         </div>
     </div>  
 </div>

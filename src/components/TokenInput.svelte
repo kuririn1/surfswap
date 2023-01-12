@@ -17,10 +17,12 @@
 
     async function sanitizeValue(rawValue) {
         if (!rawValue) {
+            value = '';
             return;
         }
 		value = cleanInput(rawValue?.toString());
         value = addSpacesToNumber(value);
+        if(value === '0') value = '';
         if(isFocused) {
             const selection = element.selectionStart - rawValue.length + value.length;
             await tick;

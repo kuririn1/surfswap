@@ -12,13 +12,10 @@ export const roundToDecimal = (num, decimal) => {
 
 export const cleanDollarInput = (num) => {
     //allow only 2 decimal places for USD
+    if(Number(num) < 0.01) {
+        num = 0.00;
+    }
     return cleanInput(num).replace(/(\..{2}).*/g, '$1');
-}
-
-export const addSpacesToNumberOld = (num) => {
-    //add spaces for thousands but not for decimals after dot
-    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
-
 }
 
 export const stripExtraChars = (num) => {
@@ -26,16 +23,13 @@ export const stripExtraChars = (num) => {
 }
 
 export const cleanInput = (num) => {
+    if(num === '.') return '0.';
+    if(typeof num !== 'string') {
+        num = num?.toString() || '';
+    }    
     //allow only numbers 
     return num?.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1').replace(/^0+(?!\.|$)/, '');
 }
-
-/*
-export const addSpacesToNumber3 = (num) => {
-	let result = parseFloat(num).toLocaleString('en-US', { style: 'currency', currency: 'USD' });
-  return result?.replace(/,/g, ' ').replace(/\$/g, '~$');
-}
-*/
 
 export const addSpacesToNumber = (num) => {
     var parts = num.toString().split(".");

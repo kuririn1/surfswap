@@ -33,6 +33,7 @@
 
     async function sanitizeValue(rawValue) {
         value = cleanDollarInput(rawValue?.toString());
+        value = value === '0' && !isFocused ? '0.00' : value;
         value = (value ? '~$' : '') + addSpacesToNumber(value);
         if(isFocused) {
             const selection = element.selectionStart - rawValue.length + value.length;

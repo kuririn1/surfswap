@@ -1,6 +1,8 @@
-import { orders, desoUsdPrice, desoApi } from '../Store.js';
+import { orders, desoUsdPrice, desoApi, tokenBalances } from '../Store.js';
 import { get } from 'svelte/store';
 import { LiqudityError } from './errors.js';
+import { getProfile } from './profile.js';
+import { desoPublicKey } from './tokens.js'
 
 const deso = get(desoApi);
 
@@ -21,10 +23,14 @@ export const getLimitOrders = async (DAOCoin1, DAOCoin2) => {
 export const tokenToUsdAmount = (amount, selectionName) => {
     let desoValue = amount;
     if(selectionName != "DESO") {
+        try {
         desoValue = daoCoinToDeso('BID', amount);
+        } catch(LiqudityError) {
+            desoValue = 0;
+        }
     }
     const calcPrice = get(desoUsdPrice) * desoValue / 100;
-    return calcPrice.toFixed(2);
+    return calcPrice;
 }
 
 export const usdToDesoAmount = (usdAmount) => {
@@ -53,9 +59,14 @@ export const usdToTokenAmount = (usdValue, selectionName) =>{
     return value;
 }
 
+//type: ASK, BID
 export const desoToDAOCoin = (type, amount) => {
 
     let toFill = amount;
+
+    if(!get(orders)) {
+       return 0;
+    }
 
     let ordersSorted = [];
     if(type === 'ASK') {
@@ -64,7 +75,7 @@ export const desoToDAOCoin = (type, amount) => {
         ordersSorted = get(orders).filter(order => order.OperationType === 'BID').sort((a, b) => parseFloat(b.Price) - parseFloat(a.Price));
     }
 
-    let num = 0; // or length askSorted! then not liquid
+    let num = 0;
     while(toFill > 0 && num < ordersSorted.length) {
         const liqudityPerAsk = parseFloat(ordersSorted[num].Quantity) * parseFloat(ordersSorted[num].Price);
         toFill -= liqudityPerAsk;
@@ -72,15 +83,13 @@ export const desoToDAOCoin = (type, amount) => {
     }
 
     if(toFill > 0) {
-        //console.log('not enough liquidity for this amount ', toFill);
         throw new LiqudityError(toFill);
-        return 0;
     }
     
     let result = [];
     let filled = 0;
     let coinTotal = 0;
-    //cal price per coin too, avg
+
     for(let i = 0; i < num; i++) {
         result.push(ordersSorted[i]);
         if(i === num - 1) {
@@ -95,6 +104,7 @@ export const desoToDAOCoin = (type, amount) => {
     return coinTotal;
 };
 
+//type: ASK, BID
 export const daoCoinToDeso = (type, amount) => {
 
     let toFill = amount;
@@ -106,9 +116,7 @@ export const daoCoinToDeso = (type, amount) => {
         ordersSorted = get(orders).filter(order => order.OperationType === 'ASK').sort((a, b) => parseFloat(a.Price) - parseFloat(b.Price));
     }
 
-    let num = 0; // or length askSorted! then not liquid
-    //not liquid if no orders
-    // and if not enough liquidity - 
+    let num = 0;
     while(toFill > 0 && num < ordersSorted.length) {
         const liqudityPerBid = parseFloat(ordersSorted[num].Quantity);
         toFill -= liqudityPerBid;
@@ -116,17 +124,13 @@ export const daoCoinToDeso = (type, amount) => {
     }
 
     if(toFill > 0) {
-        //console.log('no liquidity for this trade ', toFill);
-        throw new LiqudityError(toFill);
-        //throw custom error with toFill varible
-            
-        return 0;
+        throw new LiqudityError(toFill);       
     }
     
     let result = [];
     let filled = 0;
     let coinTotal = 0;
-    //cal price per coin too, avg
+
     for(let i = 0; i < num; i++) {
         result.push(ordersSorted[i]);
         if(i === num - 1) {
@@ -140,3 +144,39 @@ export const daoCoinToDeso = (type, amount) => {
 
     return coinTotal;
 };
+
+export const getTokenBalances = async (userPK) => {
+    const request = {
+        "FetchAll":true,
+        "FetchHodlings":true,
+        "IsDAOCoin":true,
+        "PublicKeyBase58Check": userPK
+    };
+
+    const [response, profile] = await Promise.all([
+        deso.social.getHodlersForPublicKey(request),
+        getProfile(),
+      ]);
+
+    let tokenBalances = response?.Hodlers.map(hodler => { return {
+        "token": hodler.ProfileEntryResponse.Username,
+        "tokenPK": hodler.ProfileEntryResponse.PublicKeyBase58Check,
+        "balance": parseInt(hodler.BalanceNanosUint256, 16) / 1E18
+        };
+    });
+
+    const desoBalance = profile.Profile.DESOBalanceNanos / 1E9;
+
+    tokenBalances.push({
+        "token": "DESO",
+        "tokenPK": desoPublicKey,
+        "balance": desoBalance
+    });
+
+    return tokenBalances;
+}
+
+export const getBalance = (token, refresh=null) => {
+    const obj = get(tokenBalances).find(item => item.token === token);
+    return obj ? obj.balance : 0;
+}
