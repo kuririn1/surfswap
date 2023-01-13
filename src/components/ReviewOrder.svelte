@@ -128,7 +128,7 @@
 
     function addTxToDB(txId) {
         try {
-            fetch('https://surfswap.tools.workers.dev/tx/add/' + txId, {
+            fetch('https://surfswap.so/api/tx/add/' + txId, {
                 method: 'GET',
                 headers: {
                     'x-secret': 'surfswap'
